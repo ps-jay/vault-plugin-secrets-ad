@@ -22,13 +22,13 @@ func (b *backend) pathSetGetCreds() *framework.Path {
 				Description: "Name of the set.",
 				Required:    true,
 			},
-			"service_account_names": {
+			"service_account_name": {
 				Type:        framework.TypeCommaStringSlice,
-				Description: "The username/logon name for the service accounts for the creds.",
+				Description: "The username/logon name for the service account for the creds.",
 			},
 		},
 		Operations: map[logical.Operation]framework.OperationHandler{
-			logical.UpdateOperation: &framework.PathOperation{
+			logical.ReadOperation: &framework.PathOperation{
 				Callback: b.operationGetCreds(),
 				Summary:  "Get creds for a service account in the library.",
 			},
@@ -250,10 +250,10 @@ func (b *backend) operationGetCreds() framework.OperationFunc {
 		lock.Lock()
 		defer lock.Unlock()
 
-		serviceAccountNamesRaw, serviceAccountNamesSent := fieldData.GetOk("service_account_names")
-		var serviceAccountNames []string
-		if serviceAccountNamesSent {
-			serviceAccountNames = serviceAccountNamesRaw.([]string)
+		serviceAccountNameRaw, serviceAccountNameSent := fieldData.GetOk("service_account_name")
+		var serviceAccountName []string
+		if serviceAccountNameSent {
+			serviceAccountName = serviceAccountNameRaw.([]string)
 		}
 
 		set, err := readSet(ctx, req.Storage, setName)
@@ -264,12 +264,12 @@ func (b *backend) operationGetCreds() framework.OperationFunc {
 			return logical.ErrorResponse(fmt.Sprintf(`%q doesn't exist`, setName)), nil
 		}
 
-		if len(serviceAccountNames) == 0 {
-			return logical.ErrorResponse(`the "service_account_names" to view creds for must be provided`), nil
-		} else if len(serviceAccountNames) > 1 {
-			return logical.ErrorResponse(`current limitation: the "service_account_names" must only have one account to view creds for`), nil
+		if len(serviceAccountName) == 0 {
+			return logical.ErrorResponse(`the "service_account_name" to view creds for must be provided`), nil
+		} else if len(serviceAccountName) > 1 {
+			return logical.ErrorResponse(`current limitation: the "service_account_name" must only have one account to view creds for`), nil
 		} else {
-			for _, serviceAccountName := range serviceAccountNames {
+			for _, serviceAccountName := range serviceAccountName {
 				password, err := retrievePassword(ctx, req.Storage, serviceAccountName)
 				if err != nil {
 					return nil, err
