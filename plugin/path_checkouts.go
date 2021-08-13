@@ -278,11 +278,7 @@ func (b *backend) operationGetCreds() framework.OperationFunc {
 					"service_account_name": serviceAccountName,
 					"password":             password,
 				}
-				internalData := map[string]interface{}{
-					"service_account_name": serviceAccountName,
-					"set_name":             setName,
-				}
-				resp := b.Backend.Secret(secretAccessKeyType).Response(respData, internalData)
+				resp := &logical.Response{Data: respData}
 				return resp, nil
 			}
 		}
